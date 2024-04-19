@@ -36,23 +36,23 @@ stages:
               provider: 'aws'
               command: 'validate'
               workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
-    # - stage: iac_scan
-    #   condition: always()
-    #   displayName: Code Scan
-    #   dependsOn: iac_validation
-    #   jobs:
-    #     - job: security_gate
-    #       displayName:  Checkov Scanning
-    #       steps:
-    #       - task: UsePythonVersion@0
-    #         displayName: Instalacion Python
-    #         inputs:
-    #           versionSpec: '3.8'
-    #       - script: pip install checkov
-    #         displayName: Instalacion Checkov
-    #       - script: |
-    #           checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules --compact --quiet
-    #         displayName: Escaneo IaC
+    - stage: iac_scan
+      condition: always()
+      displayName: Code Scan
+      dependsOn: iac_validation
+      jobs:
+        - job: security_gate
+          displayName:  Checkov Scanning
+          steps:
+          - task: UsePythonVersion@0
+            displayName: Instalacion Python
+            inputs:
+              versionSpec: '3.8'
+          - script: pip install checkov
+            displayName: Instalacion Checkov
+          - script: |
+              checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules --compact --quiet
+            displayName: Escaneo IaC
         # - job: sonar_scanning
         #   displayName:  SonarQube Scanning
         #   steps:
