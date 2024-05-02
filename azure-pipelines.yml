@@ -100,7 +100,7 @@ stages:
       displayName: IaC Deploy
       dependsOn: 
         - iac_validation
-        # - iac_scan
+        - iac_scan
       jobs:
         - job: iac_deploy
           displayName:  Terraform Apply
@@ -129,7 +129,7 @@ stages:
       condition: always()
       dependsOn: 
         - iac_validation
-        # - iac_scan
+        - iac_scan
       displayName: Docker Build
       jobs:
         # - job: check_app_changes
