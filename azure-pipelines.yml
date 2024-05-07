@@ -118,7 +118,7 @@ stages:
             displayName: Terraform Apply
             inputs:
               provider: 'aws'
-              command: 'apply'
+              command: 'plan'
               environmentServiceNameAWS: '$(backendServiceAWS)'
               workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
               commandOptions: '-refresh=false'
