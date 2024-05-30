@@ -17,22 +17,22 @@ resource "aws_iam_role" "iam_for_lambda" {
 EOF
 }
 
-# resource "aws_lambda_function" "analysis_lambda" {
-#   # lambda have plain text secrets in environment variables
-#   filename      = "${path.root}/resources/lambda_function_payload.zip"
-#   function_name = "${var.deployment_name}-${random_string.unique_id.result}"
-#   role          = aws_iam_role.iam_for_lambda.arn
-#   handler       = "lambda.lambda_handler"
-#   layers        = [ "arn:aws:lambda:us-east-1:108863513136:layer:requests-layer:7 " ]
+resource "aws_lambda_function" "analysis_lambda" {
+  # lambda have plain text secrets in environment variables
+  filename      = "${path.root}/resources/lambda_function_payload.zip"
+  function_name = "${var.deployment_name}-${random_string.unique_id.result}"
+  role          = aws_iam_role.iam_for_lambda.arn
+  handler       = "lambda.lambda_handler"
+  layers        = [ "arn:aws:lambda:us-east-1:108863513136:layer:requests-layer:7" ]
 
-#   source_code_hash = filebase64sha256("${path.root}/resources/lambda_function_payload.py")
+  source_code_hash = filebase64sha256("${path.root}/resources/lambda_function_payload.py")
 
-#   runtime = "python3.8"
+  runtime = "python3.9"
 
-#   environment {
-#     variables = {
-#       access_key = "AKIAIOSFODNN7EXAMPLE1"
-#       secret_key = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-#     }
-#   }
-# }
+  environment {
+    variables = {
+      access_key = "AKIAIOSFODNN7EXAMPLE1"
+      secret_key = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+    }
+  }
+}
