@@ -1,3 +1,4 @@
 attackscript/urltoattack.txt
 .idea/
 **/.venv
+infra/resources/path/*
