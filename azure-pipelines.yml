@@ -53,6 +53,18 @@ stages:
           - script: |
               checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules --compact --quiet
             displayName: Escaneo IaC
+    - stage: serverless_scan
+      displayName: Serverless Scan (Prisma)
+      jobs:
+        - job: Scan
+          displayName: Serverless Scan (Prisma)
+          steps:
+          - task: PrismaCloud.build-release-task.custom-build-release-task.prisma-cloud-compute-scan@3
+            displayName: ServerlessScan
+            inputs:
+              scanType: 'serverless'
+              twistlockService: '$(scPrismaCloudConsole)'
+              artifact: '$(serverlessFile)'
         # - job: sonar_scanning
         #   displayName:  SonarQube Scanning
         #   steps:
@@ -202,7 +214,7 @@ stages:
           - task: PrismaCloud.build-release-task.custom-build-release-task.prisma-cloud-compute-scan@3
             displayName: prismaCloudScan
             inputs:
-              twistlockService: 8f6f8a0a-315c-40b0-a688-d1773f36ed7b
+              twistlockService: '$(scPrismaCloudConsole)'
               artifact: $(imageName):$(imageTag)
     - stage: docker_push
       displayName: Docker Push
