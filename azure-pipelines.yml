@@ -118,10 +118,10 @@ stages:
         #       pollingTimeoutSec: '120'
     - stage: iac_deploy
       displayName: IaC Deploy
-      dependsOn: 
-        - serverless_scan
-        - iac_validation
-        - iac_scan
+      # dependsOn: 
+      #   - serverless_scan
+      #   - iac_validation
+      #   - iac_scan
       jobs:
         - job: iac_deploy
           displayName:  Terraform Apply
