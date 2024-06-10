@@ -29,7 +29,7 @@ jobs:
           PRISMA_API_URL: https://api.prismacloud.io
           BC_API_KEY: ${{ secrets.BC_API_KEY }}
         with:
-          api-key: ${{ secrets.BC_API_KEY }}
+          # api-key: ${{ secrets.BC_API_KEY }}
           use_enforcement_rules: true
           compact: true
           quiet: true
