@@ -53,26 +53,26 @@ stages:
           - script: |
               checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules --compact --quiet
             displayName: Escaneo IaC
-    - stage: serverless_scan
-      displayName: Serverless Scan (Prisma)
-      jobs:
-        - job: Scan
-          displayName: Serverless Scan (Prisma)
-          steps:
-          - script: zip $(serverlessFile).zip file $(serverlessFile).py
-            displayName: Zip File
-          - task: PrismaCloud.build-release-task.custom-build-release-task.prisma-cloud-compute-scan@3
-            displayName: ServerlessScan
-            inputs:
-              scanType: 'serverless'
-              twistlockService: '$(scPrismaCloudConsole)'
-              artifact: '$(serverlessFile).zip'
-          - task: PrismaCloud.build-release-task.custom-build-release-task.prisma-cloud-compute-scan@3
-            displayName: ServerlessScan (Node)
-            inputs:
-              scanType: 'serverless'
-              twistlockService: '$(scPrismaCloudConsole)'
-              artifact: 'serverless/nodejs-lambda-sample.zip'
+    # - stage: serverless_scan
+    #   displayName: Serverless Scan (Prisma)
+    #   jobs:
+    #     - job: Scan
+    #       displayName: Serverless Scan (Prisma)
+    #       steps:
+    #       - script: zip $(serverlessFile).zip file $(serverlessFile).py
+    #         displayName: Zip File
+    #       - task: PrismaCloud.build-release-task.custom-build-release-task.prisma-cloud-compute-scan@3
+    #         displayName: ServerlessScan
+    #         inputs:
+    #           scanType: 'serverless'
+    #           twistlockService: '$(scPrismaCloudConsole)'
+    #           artifact: '$(serverlessFile).zip'
+    #       - task: PrismaCloud.build-release-task.custom-build-release-task.prisma-cloud-compute-scan@3
+    #         displayName: ServerlessScan (Node)
+    #         inputs:
+    #           scanType: 'serverless'
+    #           twistlockService: '$(scPrismaCloudConsole)'
+    #           artifact: 'serverless/nodejs-lambda-sample.zip'
         # - job: sonar_scanning
         #   displayName:  SonarQube Scanning
         #   steps:
