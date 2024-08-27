@@ -60,9 +60,6 @@ stages:
             inputs:
               provider: 'aws'
               command: 'validate'
-              environmentServiceNameAWS: '$(backendServiceAWS)'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
-              commandOptions: '-refresh=false'
     - stage: iac_scan
       displayName: Code Scan
       dependsOn: iac_validation
