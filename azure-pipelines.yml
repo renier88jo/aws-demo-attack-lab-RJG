@@ -14,6 +14,29 @@ variables:
 lockBehavior: sequential
 
 stages:
+    # - stage: iac_destroy
+    #   displayName: IaC Destroy
+    #   jobs:
+    #     - job: iac_destroy
+    #       displayName:  IaC Destroy
+    #       steps:
+    #       - task: TerraformTaskV4@4
+    #         displayName: Terraform Init
+    #         inputs:
+    #           provider: 'aws'
+    #           command: 'init'
+    #           backendServiceAWS: '$(backendServiceAWS)'
+    #           backendAWSBucketName: '$(backendAWSBucketName)'
+    #           backendAWSKey: '$(backendAWSKey)'
+    #           workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
+    #       - task: TerraformTaskV4@4
+    #         displayName: Terraform Destroy
+    #         inputs:
+    #           provider: 'aws'
+    #           command: 'destroy'
+    #           environmentServiceNameAWS: '$(backendServiceAWS)'
+    #           workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
+    #           commandOptions: '-refresh=false'
     - stage: iac_validation
       condition: always()
       displayName: IaC Validate
@@ -37,24 +60,26 @@ stages:
             inputs:
               provider: 'aws'
               command: 'validate'
+              environmentServiceNameAWS: '$(backendServiceAWS)'
               workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
-    # - stage: iac_scan
-    #   condition: always()
-    #   displayName: Code Scan
-    #   dependsOn: iac_validation
-    #   jobs:
-    #     - job: security_gate
-    #       displayName:  Checkov Scanning
-    #       steps:
-    #       - task: UsePythonVersion@0
-    #         displayName: Instalacion Python
-    #         inputs:
-    #           versionSpec: '3.8'
-    #       - script: pip install checkov
-    #         displayName: Instalacion Checkov
-    #       - script: |
-    #           checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules --compact --quiet
-    #         displayName: Escaneo IaC
+              commandOptions: '-refresh=false'
+    - stage: iac_scan
+      condition: always()
+      displayName: Code Scan
+      dependsOn: iac_validation
+      jobs:
+        - job: security_gate
+          displayName:  Checkov Scanning
+          steps:
+          - task: UsePythonVersion@0
+            displayName: Instalacion Python
+            inputs:
+              versionSpec: '3.8'
+          - script: pip install checkov
+            displayName: Instalacion Checkov
+          - script: |
+              checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules --compact --quiet
+            displayName: Escaneo IaC
     - stage: serverless_scan
       displayName: Serverless Scan (Prisma)
       jobs:
@@ -75,49 +100,6 @@ stages:
               scanType: 'serverless'
               twistlockService: '$(scPrismaCloudConsole)'
               artifact: 'serverless/nodejs-lambda-sample.zip'
-        # - job: sonar_scanning
-        #   displayName:  SonarQube Scanning
-        #   steps:
-        #   - task: SonarQubePrepare@5
-        #     inputs:
-        #       SonarQube: 'davids-sonarqube'
-        #       scannerMode: 'Other'
-        #       extraProperties: |
-        #         sonar.projectKey=$(projectName)
-        #         sonar.projectName=$(projectName)
-        #   - task: JavaToolInstaller@0
-        #     inputs:
-        #       versionSpec: '17'
-        #       jdkArchitectureOption: 'x64'
-        #       jdkSourceOption: 'PreInstalled'
-        #   - task: Maven@4
-        #     inputs:
-        #       mavenPomFile: '$(appPath)/pom.xml'
-        #       goals: 'install sonar:sonar'
-        #       publishJUnitResults: true
-        #       testResultsFiles: '**/surefire-reports/TEST-*.xml'
-        #       javaHomeOption: 'JDKVersion'
-        #       mavenVersionOption: 'Default'
-        #       mavenAuthenticateFeed: false
-        #       effectivePomSkip: false
-        #       sonarQubeRunAnalysis: false
-        #   - task: SonarQubePublish@5
-        #     inputs:
-        #       pollingTimeoutSec: '120'
-        #   - task: SonarQubePrepare@5
-        #     inputs:
-        #       SonarQube: 'davids-sonarqube'
-        #       scannerMode: 'CLI'
-        #       configMode: 'manual'
-        #       cliSources: '.'
-        #       extraProperties: |
-        #         sonar.exclusions=**/*.java
-        #         sonar.coverage.exclusions=**/*.java
-        #       cliProjectKey: $(projectName)
-        #   - task: SonarQubeAnalyze@5
-        #   - task: SonarQubePublish@5
-        #     inputs:
-        #       pollingTimeoutSec: '120'
     - stage: iac_deploy
       displayName: IaC Deploy
       dependsOn: 
@@ -152,7 +134,7 @@ stages:
       condition: always()
       dependsOn: 
         - iac_validation
-        # - iac_scan
+        - iac_scan
       displayName: Docker Build
       jobs:
         # - job: check_app_changes
