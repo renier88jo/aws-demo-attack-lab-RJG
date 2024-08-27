@@ -64,7 +64,6 @@ stages:
               workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
               commandOptions: '-refresh=false'
     - stage: iac_scan
-      condition: always()
       displayName: Code Scan
       dependsOn: iac_validation
       jobs:
@@ -79,7 +78,7 @@ stages:
             displayName: Instalacion Checkov
           - script: |
               checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules --compact --quiet
-            displayName: Escaneo IaC
+            displayName: PrismaCloudCodeScan
     - stage: serverless_scan
       displayName: Serverless Scan (Prisma)
       jobs:
@@ -88,12 +87,6 @@ stages:
           steps:
           - script: zip $(serverlessFile).zip file $(serverlessFile).py
             displayName: Zip File
-          - task: PrismaCloud.build-release-task.custom-build-release-task.prisma-cloud-compute-scan@3
-            displayName: ServerlessScan
-            inputs:
-              scanType: 'serverless'
-              twistlockService: '$(scPrismaCloudConsole)'
-              artifact: '$(serverlessFile).zip'
           - task: PrismaCloud.build-release-task.custom-build-release-task.prisma-cloud-compute-scan@3
             displayName: ServerlessScan (Node)
             inputs:
