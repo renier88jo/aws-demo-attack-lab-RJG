@@ -122,9 +122,9 @@ stages:
     #         name: terraformVariables
     - stage: docker_build
       condition: always()
-      dependsOn: 
-        - iac_validation
-        - iac_scan
+      # dependsOn: 
+      #   - iac_validation
+      #   - iac_scan
       displayName: Docker Build
       jobs:
     #     # - job: check_app_changes
