@@ -14,29 +14,29 @@ variables:
 lockBehavior: sequential
 
 stages:
-    - stage: iac_destroy
-      displayName: IaC Destroy
-      jobs:
-        - job: iac_destroy
-          displayName:  IaC Destroy
-          steps:
-          - task: TerraformTaskV4@4
-            displayName: Terraform Init
-            inputs:
-              provider: 'aws'
-              command: 'init'
-              backendServiceAWS: '$(backendServiceAWS)'
-              backendAWSBucketName: '$(backendAWSBucketName)'
-              backendAWSKey: '$(backendAWSKey)'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
-          - task: TerraformTaskV4@4
-            displayName: Terraform Destroy
-            inputs:
-              provider: 'aws'
-              command: 'destroy'
-              environmentServiceNameAWS: '$(backendServiceAWS)'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
-              commandOptions: '-refresh=false'
+    # - stage: iac_destroy
+    #   displayName: IaC Destroy
+    #   jobs:
+    #     - job: iac_destroy
+    #       displayName:  IaC Destroy
+    #       steps:
+    #       - task: TerraformTaskV4@4
+    #         displayName: Terraform Init
+    #         inputs:
+    #           provider: 'aws'
+    #           command: 'init'
+    #           backendServiceAWS: '$(backendServiceAWS)'
+    #           backendAWSBucketName: '$(backendAWSBucketName)'
+    #           backendAWSKey: '$(backendAWSKey)'
+    #           workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
+    #       - task: TerraformTaskV4@4
+    #         displayName: Terraform Destroy
+    #         inputs:
+    #           provider: 'aws'
+    #           command: 'destroy'
+    #           environmentServiceNameAWS: '$(backendServiceAWS)'
+    #           workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
+    #           commandOptions: '-refresh=false'
     # - stage: iac_validation
     #   condition: always()
     #   displayName: IaC Validate
@@ -120,13 +120,13 @@ stages:
     #       - bash: |
     #           echo "##vso[task.setvariable variable=clusterName;isOutput=true]$(terraform -chdir=$(System.DefaultWorkingDirectory)/$(infraPath) output -raw cluster_name)"
     #         name: terraformVariables
-    # - stage: docker_build
-    #   condition: always()
-    #   dependsOn: 
-    #     - iac_validation
-    #     - iac_scan
-    #   displayName: Docker Build
-    #   jobs:
+    - stage: docker_build
+      condition: always()
+      dependsOn: 
+        - iac_validation
+        - iac_scan
+      displayName: Docker Build
+      jobs:
     #     # - job: check_app_changes
     #     #   displayName: 'Check changes'
     #     #   steps:
@@ -155,75 +155,75 @@ stages:
     #     #         fi
     #     #       name: check_app_changes
     #     #       displayName: 'Check changed files'
-    #     - job: docker_build
-    #       # dependsOn: check_app_changes
-    #       # condition: eq(dependencies.check_app_changes.outputs['check_app_changes.SOURCE_CODE_CHANGED'], 'true')
-    #       displayName: Docker Build
-    #       steps:
-    #       - task: Docker@2
-    #         displayName: dockerBuild
-    #         inputs:
-    #           containerRegistry: $(containerRegistry)
-    #           repository: $(imageName)
-    #           command: build
-    #           Dockerfile: '$(appPath)/Dockerfile'
-    #           tags: $(imageTag)
-    #       - task: Bash@3
-    #         displayName: Save Docker Image
-    #         inputs:
-    #           targetType: 'inline'
-    #           script: docker save -o $(Pipeline.Workspace)/image.tar $(imageName):$(imageTag)
-    #       - task: PublishPipelineArtifact@1
-    #         inputs:
-    #           targetPath: '$(Pipeline.Workspace)/image.tar'
-    #           artifact: 'myArtifact'
-    #           publishLocation: 'pipeline'
-    # - stage: docker_image_scan
-    #   displayName: Image Scan (Prisma)
-    #   dependsOn: docker_build
-    #   # condition:  eq(dependencies.docker_build.outputs['check_app_changes.check_app_changes.SOURCE_CODE_CHANGED'], 'true')
-    #   jobs:
-    #     - job: Scan
-    #       displayName: Image Scan (Prisma)
-    #       steps:
-    #       - task: DownloadPipelineArtifact@2
-    #         inputs:
-    #           buildType: 'current'
-    #           artifactName: 'myArtifact'
-    #           targetPath: '$(Pipeline.Workspace)'
-    #       - bash: |
-    #           docker load --input '$(Pipeline.Workspace)/image.tar'
-    #         displayName: 'dockerLoadImage'
-    #       - task: PrismaCloud.build-release-task.custom-build-release-task.prisma-cloud-compute-scan@3
-    #         displayName: prismaCloudScan
-    #         inputs:
-    #           twistlockService: '$(scPrismaCloudConsole)'
-    #           artifact: $(imageName):$(imageTag)
-    # - stage: docker_push
-    #   displayName: Docker Push
-    #   dependsOn: 
-    #     - docker_build
-    #     - docker_image_scan
-    #   # condition:  eq(dependencies.docker_build.outputs['check_app_changes.check_app_changes.SOURCE_CODE_CHANGED'], 'true')
-    #   jobs:
-    #     - job: docker_push
-    #       displayName: Docker Push
-    #       steps:
-    #       - task: DownloadPipelineArtifact@2
-    #         inputs:
-    #           buildType: 'current'
-    #           artifactName: 'myArtifact'
-    #           targetPath: '$(Pipeline.Workspace)'
-    #       - bash: |
-    #           docker load --input '$(Pipeline.Workspace)/image.tar'
-    #         displayName: 'dockerLoadImage'
-    #       - task: Docker@2
-    #         displayName: dockerPush
-    #         inputs:
-    #           containerRegistry: $(containerRegistry)
-    #           repository: $(imageName)
-    #           command: push
-    #           tags: $(imageTag)
+        - job: docker_build
+          # dependsOn: check_app_changes
+          # condition: eq(dependencies.check_app_changes.outputs['check_app_changes.SOURCE_CODE_CHANGED'], 'true')
+          displayName: Docker Build
+          steps:
+          - task: Docker@2
+            displayName: dockerBuild
+            inputs:
+              containerRegistry: $(containerRegistry)
+              repository: $(imageName)
+              command: build
+              Dockerfile: '$(appPath)/Dockerfile'
+              tags: $(imageTag)
+          - task: Bash@3
+            displayName: Save Docker Image
+            inputs:
+              targetType: 'inline'
+              script: docker save -o $(Pipeline.Workspace)/image.tar $(imageName):$(imageTag)
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(Pipeline.Workspace)/image.tar'
+              artifact: 'myArtifact'
+              publishLocation: 'pipeline'
+    - stage: docker_image_scan
+      displayName: Image Scan (Prisma)
+      dependsOn: docker_build
+      # condition:  eq(dependencies.docker_build.outputs['check_app_changes.check_app_changes.SOURCE_CODE_CHANGED'], 'true')
+      jobs:
+        - job: Scan
+          displayName: Image Scan (Prisma)
+          steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: 'current'
+              artifactName: 'myArtifact'
+              targetPath: '$(Pipeline.Workspace)'
+          - bash: |
+              docker load --input '$(Pipeline.Workspace)/image.tar'
+            displayName: 'dockerLoadImage'
+          - task: PrismaCloud.build-release-task.custom-build-release-task.prisma-cloud-compute-scan@3
+            displayName: prismaCloudScan
+            inputs:
+              twistlockService: '$(scPrismaCloudConsole)'
+              artifact: $(imageName):$(imageTag)
+    - stage: docker_push
+      displayName: Docker Push
+      dependsOn: 
+        - docker_build
+        - docker_image_scan
+      # condition:  eq(dependencies.docker_build.outputs['check_app_changes.check_app_changes.SOURCE_CODE_CHANGED'], 'true')
+      jobs:
+        - job: docker_push
+          displayName: Docker Push
+          steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: 'current'
+              artifactName: 'myArtifact'
+              targetPath: '$(Pipeline.Workspace)'
+          - bash: |
+              docker load --input '$(Pipeline.Workspace)/image.tar'
+            displayName: 'dockerLoadImage'
+          - task: Docker@2
+            displayName: dockerPush
+            inputs:
+              containerRegistry: $(containerRegistry)
+              repository: $(imageName)
+              command: push
+              tags: $(imageTag)
     # - stage: app_deployment
     #   displayName: Application Deploy
     #   dependsOn: 
