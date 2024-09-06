@@ -13,7 +13,6 @@ RUN mv target/helloworld.war /usr/local/tomcat/webapps/
 
 EXPOSE 8080
 
-ENTRYPOINT ["catalina.sh", "run"]
 # Twistlock Container Defender - app embedded
 ADD twistlock_defender_app_embedded.tar.gz /tmp
 ENV DEFENDER_TYPE="appEmbedded"
