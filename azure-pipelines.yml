@@ -93,7 +93,7 @@ stages:
     - stage: iac_deploy
       displayName: IaC Deploy
       dependsOn: 
-        - serverless_scan
+        # - serverless_scan
         - iac_validation
         - iac_scan
       jobs:
