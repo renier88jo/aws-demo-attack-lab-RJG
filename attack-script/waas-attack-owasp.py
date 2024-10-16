@@ -43,69 +43,68 @@ def main():
         headers = {}
 
         print("[+]----------------------------------------------------------------------------------------------------------------------------")
-        print("[+] La URL para prueba es: {}".format(url))
+        print("[+] The URL for testing is: {}".format(url))
 
         # SQL Injection
         cmdSql = "{}/?id=-1+union+all+select+1,group_concat(user,0x3a,file_priv),3,4+from+mysql.user--".format(url)
         print("[+]----------------------------------------------------------------------------------------------------")
-        print("[+] Intentando hacer un SQL Injection")
+        print("[+] Attacking with SQL Injection")
         SQLInjecton = requests.request("GET",cmdSql, data=payload, headers=headers)
         if SQLInjecton.status_code != 200:
-            print("[+] SQL Injection no exitoso! Bloqueado por Prisma Cloud - {}".format(SQLInjecton))
+            print("[+] SQL Injection unsuccessful! Blocked by Prisma Cloud - {}".format(SQLInjecton))
         else:
-            print("[+] SQL Injection exitoso! - {}".format(SQLInjecton))
+            print("[+] SQL Injection successful! - {}".format(SQLInjecton))
         time.sleep(1)
 
         # Command Injection
         cmdCommandInjection = "{}/?codei=codei=__import__(%27os%27).popen(%27uname%20-a%27).read()".format(url)
         print("[+]----------------------------------------------------------------------------------------------------")
-        print("[+] Intentando hacer un Command Injection")
+        print("[+] Attacking with Command Injection")
         CommandInjection = requests.request("GET",cmdCommandInjection, data=payload, headers=headers)
         if CommandInjection.status_code != 200:
-            print("[+] Command Injection no exitoso! Bloqueado por Prisma Cloud - {}".format(CommandInjection))
+            print("[+] Command Injection unsuccessful! Blocked by Prisma Cloud - {}".format(CommandInjection))
         else:
-            print("[+] Command Injection exitoso! - {}".format(CommandInjection))
+            print("[+] Command Injection successful! - {}".format(CommandInjection))
         time.sleep(1)
 
         # File Inclusion
         cmdFileInclusion = "{}/?lfi=/..0x2fboot.ini".format(url)
         print("[+]----------------------------------------------------------------------------------------------------")
-        print("[+] Intentando hacer un File Inclusion")
+        print("[+] Attacking with File Inclusion")
         FileInclusion = requests.request("GET",cmdFileInclusion, data=payload, headers=headers)
         if FileInclusion.status_code != 200:
-            print("[+] Local File Inclusion no exitoso! Bloqueado por Prisma Cloud - {}".format(FileInclusion))
+            print("[+] Local File Inclusion unsuccessful! Blocked by Prisma Cloud - {}".format(FileInclusion))
         else:
-            print("[+] Local File Inclusion exitoso! - {}".format(FileInclusion))
+            print("[+] Local File Inclusion successful! - {}".format(FileInclusion))
         time.sleep(1)
 
         # Cross-Site Scripting - <script>alert(1)</script>
         cmdXSS = "{}".format(url)
         print("[+]----------------------------------------------------------------------------------------------------")
-        print("[+] Intentando hacer un Cross-Site Scripting (XSS) - <script>alert(1)</script>")
+        print("[+] Attacking with Cross-Site Scripting (XSS) - <script>alert(1)</script>")
         payload = '<script>alert(1)</script>'
         XSS = requests.request("POST",cmdXSS, data=payload, headers=headers)
         if XSS.status_code != 200:
-            print("[+] Cross-Site Scripting (XSS) no exitoso! Bloqueado por Prisma Cloud - {}".format(XSS))
+            print("[+] Cross-Site Scripting (XSS) unsuccessful! Blocked by Prisma Cloud - {}".format(XSS))
         else:
-            print("[+] Cross-Site Scripting (XSS) exitoso! - {}".format(XSS))
+            print("[+] Cross-Site Scripting (XSS) successful! - {}".format(XSS))
         time.sleep(1)
 
         ## Malformed HTTP Request
         cmdMalformed = "{}".format(url)
         print("[+]----------------------------------------------------------------------------------------------------")
-        print("[+] Intentando hacer un Malformed HTTP Request")
+        print("[+] Attacking with Malformed HTTP Request")
         payload = 'test-waas'
         Malformed = requests.request("GET",cmdMalformed, data=payload, headers=headers)
         if Malformed.status_code != 200:
-            print("[+] Malformed HTTP Request no exitoso! Bloqueado por Prisma Cloud - {}".format(Malformed))
+            print("[+] Malformed HTTP Request unsuccessful! Blocked by Prisma Cloud - {}".format(Malformed))
         else:
-            print("[+] Malformed HTTP Request exitoso! - {}".format(Malformed))
+            print("[+] Malformed HTTP Request successful! - {}".format(Malformed))
         time.sleep(1)
 
         print("[+]----------------------------------------------------------------------------------------------------")
     except Exception as e:
         print(e)
-
 
 if __name__ == '__main__':
     main()
