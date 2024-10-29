@@ -2,7 +2,7 @@ module "eks" {
   source                         = "terraform-aws-modules/eks/aws"
   version                        = "19.0.4"
   cluster_name                   = "${var.deployment_name}-${random_string.unique_id.result}"
-  cluster_version                = "1.28"
+  cluster_version                = "1.29"
   vpc_id                         = module.vpc.vpc_id
   subnet_ids                     = module.vpc.private_subnets
   cluster_endpoint_public_access = true
@@ -14,7 +14,7 @@ module "eks" {
     one = {
       name = "${var.deployment_name}-ng1"
 
-      instance_types = ["t3.small"]
+      instance_types = ["t3.large"]
 
       min_size     = 1
       max_size     = 2
