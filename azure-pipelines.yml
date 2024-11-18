@@ -14,11 +14,91 @@ variables:
 lockBehavior: sequential
 
 stages:
-    # - stage: iac_destroy
-    #   displayName: IaC Destroy
+    - stage: iac_destroy
+      displayName: IaC Destroy
+      jobs:
+        - job: iac_destroy
+          displayName:  IaC Destroy
+          steps:
+          - task: TerraformTaskV4@4
+            displayName: Terraform Init
+            inputs:
+              provider: 'aws'
+              command: 'init'
+              backendServiceAWS: '$(backendServiceAWS)'
+              backendAWSBucketName: '$(backendAWSBucketName)'
+              backendAWSKey: '$(backendAWSKey)'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
+          - task: TerraformTaskV4@4
+            displayName: Terraform Destroy
+            inputs:
+              provider: 'aws'
+              command: 'destroy'
+              environmentServiceNameAWS: '$(backendServiceAWS)'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
+              commandOptions: '-refresh=false'
+    # - stage: iac_validation
+    #   condition: always()
+    #   displayName: IaC Validate
     #   jobs:
-    #     - job: iac_destroy
-    #       displayName:  IaC Destroy
+    #     - job: iac_validation
+    #       displayName:  IaC Validation
+    #       steps:
+    #       - bash: env
+    #         displayName: Display Environment Variables
+    #       - task: TerraformTaskV4@4
+    #         displayName: Terraform Init
+    #         inputs:
+    #           provider: 'aws'
+    #           command: 'init'
+    #           backendServiceAWS: '$(backendServiceAWS)'
+    #           backendAWSBucketName: '$(backendAWSBucketName)'
+    #           backendAWSKey: '$(backendAWSKey)'
+    #           workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
+    #       - task: TerraformTaskV4@4
+    #         displayName: Terraform Validate
+    #         inputs:
+    #           provider: 'aws'
+    #           command: 'validate'
+    # - stage: iac_scan
+    #   displayName: Code Scan
+    #   dependsOn: iac_validation
+    #   jobs:
+    #     - job: security_gate
+    #       displayName:  Checkov Scanning
+    #       steps:
+    #       - task: UsePythonVersion@0
+    #         displayName: Instalacion Python
+    #         inputs:
+    #           versionSpec: '3.8'
+    #       - script: pip install checkov
+    #         displayName: Instalacion Checkov
+    #       - script: |
+    #           checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules --compact --quiet
+    #         displayName: PrismaCloudCodeScan
+    # - stage: serverless_scan
+    #   displayName: Serverless Scan (Prisma)
+    #   jobs:
+    #     - job: Scan
+    #       displayName: Serverless Scan (Prisma)
+    #       steps:
+    #       - script: zip $(serverlessFile).zip file $(serverlessFile).py
+    #         displayName: Zip File
+    #       - task: PrismaCloud.build-release-task.custom-build-release-task.prisma-cloud-compute-scan@3
+    #         displayName: ServerlessScan (Node)
+    #         inputs:
+    #           scanType: 'serverless'
+    #           twistlockService: '$(scPrismaCloudConsole)'
+    #           artifact: 'serverless/nodejs-lambda-sample.zip'
+    # - stage: iac_deploy
+    #   displayName: IaC Deploy
+    #   dependsOn: 
+    #     - serverless_scan
+    #     - iac_validation
+    #     - iac_scan
+    #   jobs:
+    #     - job: iac_deploy
+    #       displayName:  Terraform Init
     #       steps:
     #       - task: TerraformTaskV4@4
     #         displayName: Terraform Init
@@ -30,96 +110,16 @@ stages:
     #           backendAWSKey: '$(backendAWSKey)'
     #           workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
     #       - task: TerraformTaskV4@4
-    #         displayName: Terraform Destroy
+    #         displayName: Terraform Apply
     #         inputs:
     #           provider: 'aws'
-    #           command: 'destroy'
+    #           command: 'apply'
     #           environmentServiceNameAWS: '$(backendServiceAWS)'
     #           workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
     #           commandOptions: '-refresh=false'
-    - stage: iac_validation
-      condition: always()
-      displayName: IaC Validate
-      jobs:
-        - job: iac_validation
-          displayName:  IaC Validation
-          steps:
-          - bash: env
-            displayName: Display Environment Variables
-          - task: TerraformTaskV4@4
-            displayName: Terraform Init
-            inputs:
-              provider: 'aws'
-              command: 'init'
-              backendServiceAWS: '$(backendServiceAWS)'
-              backendAWSBucketName: '$(backendAWSBucketName)'
-              backendAWSKey: '$(backendAWSKey)'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
-          - task: TerraformTaskV4@4
-            displayName: Terraform Validate
-            inputs:
-              provider: 'aws'
-              command: 'validate'
-    - stage: iac_scan
-      displayName: Code Scan
-      dependsOn: iac_validation
-      jobs:
-        - job: security_gate
-          displayName:  Checkov Scanning
-          steps:
-          - task: UsePythonVersion@0
-            displayName: Instalacion Python
-            inputs:
-              versionSpec: '3.8'
-          - script: pip install checkov
-            displayName: Instalacion Checkov
-          - script: |
-              checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules --compact --quiet
-            displayName: PrismaCloudCodeScan
-    - stage: serverless_scan
-      displayName: Serverless Scan (Prisma)
-      jobs:
-        - job: Scan
-          displayName: Serverless Scan (Prisma)
-          steps:
-          - script: zip $(serverlessFile).zip file $(serverlessFile).py
-            displayName: Zip File
-          - task: PrismaCloud.build-release-task.custom-build-release-task.prisma-cloud-compute-scan@3
-            displayName: ServerlessScan (Node)
-            inputs:
-              scanType: 'serverless'
-              twistlockService: '$(scPrismaCloudConsole)'
-              artifact: 'serverless/nodejs-lambda-sample.zip'
-    - stage: iac_deploy
-      displayName: IaC Deploy
-      dependsOn: 
-        - serverless_scan
-        - iac_validation
-        - iac_scan
-      jobs:
-        - job: iac_deploy
-          displayName:  Terraform Init
-          steps:
-          - task: TerraformTaskV4@4
-            displayName: Terraform Init
-            inputs:
-              provider: 'aws'
-              command: 'init'
-              backendServiceAWS: '$(backendServiceAWS)'
-              backendAWSBucketName: '$(backendAWSBucketName)'
-              backendAWSKey: '$(backendAWSKey)'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
-          - task: TerraformTaskV4@4
-            displayName: Terraform Apply
-            inputs:
-              provider: 'aws'
-              command: 'apply'
-              environmentServiceNameAWS: '$(backendServiceAWS)'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
-              commandOptions: '-refresh=false'
-          - bash: |
-              echo "##vso[task.setvariable variable=clusterName;isOutput=true]$(terraform -chdir=$(System.DefaultWorkingDirectory)/$(infraPath) output -raw cluster_name)"
-            name: terraformVariables
+    #       - bash: |
+    #           echo "##vso[task.setvariable variable=clusterName;isOutput=true]$(terraform -chdir=$(System.DefaultWorkingDirectory)/$(infraPath) output -raw cluster_name)"
+    #         name: terraformVariables
     # - stage: docker_build
     #   condition: always()
     #   dependsOn: 
