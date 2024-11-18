@@ -9,34 +9,34 @@ pool:
     vmImage: ubuntu-latest
   
 variables:
-  - group: aws-demo-attack-lab-v2
+  - group: aws-demo-attack-lab-v2-eks-workshop
 
 lockBehavior: sequential
 
 stages:
-    - stage: iac_destroy
-      displayName: IaC Destroy
-      jobs:
-        - job: iac_destroy
-          displayName:  IaC Destroy
-          steps:
-          - task: TerraformTaskV4@4
-            displayName: Terraform Init
-            inputs:
-              provider: 'aws'
-              command: 'init'
-              backendServiceAWS: '$(backendServiceAWS)'
-              backendAWSBucketName: '$(backendAWSBucketName)'
-              backendAWSKey: '$(backendAWSKey)'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
-          - task: TerraformTaskV4@4
-            displayName: Terraform Destroy
-            inputs:
-              provider: 'aws'
-              command: 'destroy'
-              environmentServiceNameAWS: '$(backendServiceAWS)'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
-              commandOptions: '-refresh=false'
+    # - stage: iac_destroy
+    #   displayName: IaC Destroy
+    #   jobs:
+    #     - job: iac_destroy
+    #       displayName:  IaC Destroy
+    #       steps:
+    #       - task: TerraformTaskV4@4
+    #         displayName: Terraform Init
+    #         inputs:
+    #           provider: 'aws'
+    #           command: 'init'
+    #           backendServiceAWS: '$(backendServiceAWS)'
+    #           backendAWSBucketName: '$(backendAWSBucketName)'
+    #           backendAWSKey: '$(backendAWSKey)'
+    #           workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
+    #       - task: TerraformTaskV4@4
+    #         displayName: Terraform Destroy
+    #         inputs:
+    #           provider: 'aws'
+    #           command: 'destroy'
+    #           environmentServiceNameAWS: '$(backendServiceAWS)'
+    #           workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
+    #           commandOptions: '-refresh=false'
     # - stage: iac_validation
     #   condition: always()
     #   displayName: IaC Validate
@@ -90,36 +90,36 @@ stages:
     #           scanType: 'serverless'
     #           twistlockService: '$(scPrismaCloudConsole)'
     #           artifact: 'serverless/nodejs-lambda-sample.zip'
-    # - stage: iac_deploy
-    #   displayName: IaC Deploy
-    #   dependsOn: 
-    #     - serverless_scan
-    #     - iac_validation
-    #     - iac_scan
-    #   jobs:
-    #     - job: iac_deploy
-    #       displayName:  Terraform Init
-    #       steps:
-    #       - task: TerraformTaskV4@4
-    #         displayName: Terraform Init
-    #         inputs:
-    #           provider: 'aws'
-    #           command: 'init'
-    #           backendServiceAWS: '$(backendServiceAWS)'
-    #           backendAWSBucketName: '$(backendAWSBucketName)'
-    #           backendAWSKey: '$(backendAWSKey)'
-    #           workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
-    #       - task: TerraformTaskV4@4
-    #         displayName: Terraform Apply
-    #         inputs:
-    #           provider: 'aws'
-    #           command: 'apply'
-    #           environmentServiceNameAWS: '$(backendServiceAWS)'
-    #           workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
-    #           commandOptions: '-refresh=false'
-    #       - bash: |
-    #           echo "##vso[task.setvariable variable=clusterName;isOutput=true]$(terraform -chdir=$(System.DefaultWorkingDirectory)/$(infraPath) output -raw cluster_name)"
-    #         name: terraformVariables
+    - stage: iac_deploy
+      displayName: IaC Deploy
+      dependsOn: 
+        - serverless_scan
+        - iac_validation
+        - iac_scan
+      jobs:
+        - job: iac_deploy
+          displayName:  Terraform Init
+          steps:
+          - task: TerraformTaskV4@4
+            displayName: Terraform Init
+            inputs:
+              provider: 'aws'
+              command: 'init'
+              backendServiceAWS: '$(backendServiceAWS)'
+              backendAWSBucketName: '$(backendAWSBucketName)'
+              backendAWSKey: '$(backendAWSKey)'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
+          - task: TerraformTaskV4@4
+            displayName: Terraform Apply
+            inputs:
+              provider: 'aws'
+              command: 'apply'
+              environmentServiceNameAWS: '$(backendServiceAWS)'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
+              commandOptions: '-refresh=false'
+          - bash: |
+              echo "##vso[task.setvariable variable=clusterName;isOutput=true]$(terraform -chdir=$(System.DefaultWorkingDirectory)/$(infraPath) output -raw cluster_name)"
+            name: terraformVariables
     # - stage: docker_build
     #   condition: always()
     #   dependsOn: 
