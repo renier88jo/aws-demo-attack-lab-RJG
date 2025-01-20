@@ -1,4 +1,4 @@
-name: Deployment aws-demo-attack-lab-v2
+name: Deployment aws-demo-attack-lab-v2.1
 
 on:
   push:
