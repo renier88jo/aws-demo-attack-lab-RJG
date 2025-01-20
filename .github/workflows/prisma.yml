@@ -32,7 +32,7 @@ jobs:
         working-directory: ${{ env.working-directory }}
         run: |
           terraform init -backend-config="bucket=${{ env.S3_BACKEND }}" -backend-config="region=${{ env.AWS_REGION }}" -backend-config="key=terraform.tfstate"
-          terraform destroy
+          terraform destroy --auto-approve
   # prisma_cloud_code_scan:
   #   permissions:
   #     contents: read
